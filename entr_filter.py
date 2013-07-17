@@ -2,6 +2,13 @@ import sys
 import re
 import argparse
 
+## entr_filter.py <entrained file name> <whitelist file name>
+##
+## This loads the file of entrained variables, along with the whitelist, then prints out
+## any entrained variables that are not covered by the whitelist.
+##
+
+
 entrainedByPatt = re.compile('Script ([^ ]+) \(([^:]+):(\d+)\) has variables entrained by ([^ ]+) \(([^:]+):(\d+)\) ::([^\r\n]*)\r?$')
 
 # 1: outer function script name
