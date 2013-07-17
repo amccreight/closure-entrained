@@ -35,25 +35,40 @@ whitelistPatt = re.compile('outer ([^ ]+) \(([^:]+):(\d+)\) inner \* ::([^\r\n]*
 def scriptToString(s):
     return '{0} ({1}:{2})'.format(s[0], s[1], s[2])
 
+def printEntrainedVars(entrainedVars):
+    for outer, innerMap in entrainedVars.iteritems():
+        for inner, evars in innerMap.iteritems():
+            print 'OUTER:', scriptToString(outer), '; INNER:', scriptToString(inner), '; VARS:', ', '.join(evars)
+
+##########
+
 wildcardWhitelist = set(['*'])
 
-def cancelify (entrainedVars, whitelist):
+def filterVars (entrainedVars, whitelist):
+    filteredEntrainedVars = {}
+
     for outer, innerMap in entrainedVars.iteritems():
         innerWhitelist = whitelist.get(outer, set([]))
 
         # If this outer function is wildcarded
         if innerWhitelist == wildcardWhitelist:
-            print 'WILD CARD!'
             continue
-        print 'OUTER', outer
-        print '\t', innerMap
-        print '\t', innerWhitelist
 
+        newInnerMap = {}
 
-#        sys.stdout.write('outer {0}\n'.format(scriptToString(outer)))
-#        sys.stdout.write('inner {0}\n'.format(scriptToString(inner)))
+        for inner, evars in innerMap.iteritems():
+            # Could complain when something in the white list isn't actually entrained.
+            newEvars = evars - innerWhitelist
+            if len(newEvars) == 0:
+                continue
+            newInnerMap[inner] = newEvars
 
-#        print '\tentrained: ', evars
+        if len(newInnerMap) == 0:
+            continue
+
+        filteredEntrainedVars[outer] = newInnerMap
+
+    return filteredEntrainedVars
 
 
 
@@ -149,9 +164,6 @@ basePath='/Users/amccreight/mz/'
 entrainedVars = loadEntrainedFile(sys.argv[1], basePath)
 whitelist = loadWhitelist(sys.argv[2])
 
-cancelify(entrainedVars, whitelist)
+entrainedVars = filterVars(entrainedVars, whitelist)
 
-
-
-
-
+printEntrainedVars(entrainedVars)
